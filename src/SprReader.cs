@@ -4,6 +4,9 @@ using SixLabors.ImageSharp.PixelFormats;
 
 public class SprReader
 {
+    /// <summary>
+    /// Reads .spr, .b00 and .jus files and returns a list of images.
+    /// </summary>
     public List<Image<Rgba32>> Process(string fileName)
     {
         // 0x000 Header  
@@ -13,7 +16,7 @@ public class SprReader
         const int FrameMetadataOffset = 776;
         const int FrameMetadataSize = 8;
 
-        var bitmaps = new List<Image<Rgba32>>();
+        var result = new List<Image<Rgba32>>();
 
         using (var br = new BinaryReader(File.OpenRead(fileName)))
         {
@@ -73,11 +76,11 @@ public class SprReader
                 br.BaseStream.Seek(frame.Start, SeekOrigin.Begin);
                 var imageData = br.ReadBytes(frame.BytesInThisFrame);
                 var bitmap = ConvertToBitmap(imageData, frame.Width, frame.Height, compressed, palette);
-                bitmaps.Add(bitmap);
+                result.Add(bitmap);
             }
         }
 
-        return bitmaps;
+        return result;
     }
 
     Image<Rgba32> ConvertToBitmap(byte[] imageData, int width, int height, bool compressed, List<RGBA> palette)
