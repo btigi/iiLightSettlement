@@ -5,6 +5,13 @@ iiLightSettlement is a C# library supporting the modification of files relating 
 
 Currently only converting the SPR graphic files to bitmap images is supported.
 
+
+| Name   | Read | Write |
+|--------|:----:|-------|
+| BTS    | ✗   |   ✗   |
+| FIN    | ✗   |   ✗   |
+| SPR    | ✔   |   ✗   |
+
 ## Download
 
 Compiled downloads are not available.
