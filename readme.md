@@ -3,13 +3,15 @@
 
 iiLightSettlement is a C# library supporting the modification of files relating to Dark Colony, the 1997 RTS game developed by Alternative Reality.
 
-Currently only converting the SPR graphic files to bitmap images is supported.
-
-
 | Name   | Read | Write |
 |--------|:----:|-------|
 | BTS    | ✔   |   ✗   |
 | FIN    | ✗   |   ✗   |
+| JUS    | ✔   |   ✗   |
+| MAP    | ✗   |   ✗   |
+| MTG    | ✗   |   ✗   |
+| OVH    | ✗   |   ✗   |
+| PTH    | ✗   |   ✗   |
 | SPR    | ✔   |   ✗   |
 
 ## Download
