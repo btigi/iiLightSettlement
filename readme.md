@@ -8,7 +8,7 @@ Currently only converting the SPR graphic files to bitmap images is supported.
 
 | Name   | Read | Write |
 |--------|:----:|-------|
-| BTS    | ✗   |   ✗   |
+| BTS    | ✔   |   ✗   |
 | FIN    | ✗   |   ✗   |
 | SPR    | ✔   |   ✗   |
 
