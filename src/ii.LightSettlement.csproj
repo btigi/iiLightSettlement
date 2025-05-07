@@ -6,10 +6,24 @@
     <AssemblyName>ii.LightSettlement</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <Copyright>Copyright ©  2025</Copyright>
+    <Title>ii.LightSettlement</Title>
+    <Version>0.2.5.0</Version>
+    <Authors>iggti</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/btigi/iiLightSettlement/</RepositoryUrl>
+    <Description>C# library supporting the modification of files relating to Dark Colony, the 1997 RTS game developed by Alternative Reality.</Description>
+    <PackageTags>dark colony</PackageTags>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\readme.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>
