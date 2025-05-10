@@ -2,7 +2,7 @@
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp;
 
-public class BtsReader
+public class BtsProcessor
 {
     public List<RGBA> GetPalette(string fileName)
     {
@@ -27,7 +27,7 @@ public class BtsReader
         return palette;
     }
 
-    public List<Image<Rgba32>> Process(string fileName)
+    public List<Image<Rgba32>> Read(string fileName)
     {
         const int FrameDataOffset = 776; // 8 byte header followed by 256 palette (3 bytes per entry)
         const int FrameLength = 1028;    // 32x32, 4 byte header
@@ -36,9 +36,9 @@ public class BtsReader
 
         using var br = new BinaryReader(File.OpenRead(fileName));
         _ = br.ReadInt16();
-        _ = br.ReadInt16(); // always 0
+        _ = br.ReadInt16(); // Always 0
         var frameCount = br.ReadInt16();
-        _ = br.ReadInt16(); // always 0
+        _ = br.ReadInt16(); // Always 0
 
         var palette = new List<RGBA>();
         for (var i = 0; i < 256; i++)
@@ -90,7 +90,7 @@ public class BtsReader
         return result;
     }
 
-    public void Write(string fileName, List<Image<Rgba32>> images, List<RGBA> palette)
+    public void Write(string fileName, List<(Image<Rgba32> image, int infoByte)> images, List<RGBA> palette)
     {
         const int FrameWidth = 32;
         const int FrameHeight = 32;
@@ -103,7 +103,7 @@ public class BtsReader
         using var bw = new BinaryWriter(File.Open(fileName, FileMode.Create));
 
         // Write header
-        bw.Write((short)0); // Placeholder for header value
+        bw.Write((short)0);
         bw.Write((short)0); // Always 0
         bw.Write((short)images.Count); // Frame count
         bw.Write((short)0); // Always 0
@@ -118,18 +118,18 @@ public class BtsReader
         // Write frames
         foreach (var image in images)
         {
-            if (image.Width != FrameWidth || image.Height != FrameHeight)
+            if (image.image.Width != FrameWidth || image.image.Height != FrameHeight)
             {
                 throw new ArgumentException($"All images must be {FrameWidth}x{FrameHeight}.");
             }
 
-            bw.Write(300); // Placeholder for frame header value
+            bw.Write(image.infoByte);
 
             for (var y = 0; y < FrameHeight; y++)
             {
                 for (var x = 0; x < FrameWidth; x++)
                 {
-                    var pixel = image[x, y];
+                    var pixel = image.image[x, y];
                     var closestColorIndex = palette.FindIndex(p =>
                         p.R == pixel.R && p.G == pixel.G && p.B == pixel.B);
 
