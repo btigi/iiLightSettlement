@@ -100,25 +100,13 @@ public class BtsReader
             throw new ArgumentException("Palette must contain 256 colors.");
         }
 
-        using var bw = new BinaryWriter(File.OpenWrite(fileName));
+        using var bw = new BinaryWriter(File.Open(fileName, FileMode.Create));
 
         // Write header
         bw.Write((short)0); // Placeholder for header value
         bw.Write((short)0); // Always 0
         bw.Write((short)images.Count); // Frame count
         bw.Write((short)0); // Always 0
-
-        // Generate and write palette
-        //for (var i = 0; i < 256; i++)
-        //{
-        //    palette.Add(new RGBA
-        //    {
-        //        R = (byte)(i * 4 + 3),
-        //        G = (byte)(i * 4 + 3),
-        //        B = (byte)(i * 4 + 3),
-        //        A = 255
-        //    });
-        //}
 
         foreach (var color in palette)
         {
