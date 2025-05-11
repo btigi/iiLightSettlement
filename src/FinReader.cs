@@ -1,8 +1,8 @@
 ﻿using System.Text;
 
-public class FinReader
+public class FinProcessor
 {
-    public Fin Process(string fileName)
+    public Fin Read(string fileName)
     {
         var fin = new Fin();
 
