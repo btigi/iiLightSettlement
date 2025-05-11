@@ -12,6 +12,7 @@ public class FinReader
         var animationSequenceCount = br.ReadInt16();
         var sprCount = br.ReadInt16();
 
+        // Spr filenames - 8 bytes
         for (int i = 0; i < sprCount; i++)
         {
             var sprFilenameBytes = br.ReadBytes(8);
@@ -19,7 +20,7 @@ public class FinReader
             fin.SprFilenames.Add(sprFilename);
         }
 
-        // 20 bytes
+        // Animation sequences - 20 bytes
         for (int i = 0; i < animationSequenceCount; i++)
         {
             var sequenceDescriptionBytes = br.ReadBytes(16);
@@ -76,6 +77,60 @@ public class FinReader
         }
 
         return fin;
+    }
+
+    public void Write(string fileName, Fin fin)
+    {
+        var unknownBlockCount = 1;
+
+        using var bw = new BinaryWriter(File.Open(fileName, FileMode.Create));
+        bw.Write((short)0x1d00);        
+        bw.Write((short)unknownBlockCount);
+        bw.Write((short)fin.AnimationSequencesInfos.Count);
+        bw.Write((short)fin.SprFilenames.Count);
+
+        // Spr filenames - 8 bytes
+        foreach (var sprFilename in fin.SprFilenames)
+        {
+            var sprFilenameBytes = Encoding.ASCII.GetBytes(sprFilename.PadRight(8, '\0'));
+            bw.Write(sprFilenameBytes);
+        }
+
+        // Animation sequences - 20 bytes
+        foreach (var sequence in fin.AnimationSequencesInfos)
+        {
+            var sequenceNameBytes = Encoding.ASCII.GetBytes(sequence.SequenceNames.PadRight(16, '\0'));
+            bw.Write(sequenceNameBytes);
+            bw.Write((short)sequence.StartFrame);
+            bw.Write((short)sequence.EndFrame);
+        }
+
+        // Unknown blocks
+        for (int i = 0; i < unknownBlockCount; i++)
+        {
+            bw.Write((short)0);
+            bw.Write((short)0);
+            for (int j = 0; j < 8; j++)
+            {
+                var nameBytes = Encoding.ASCII.GetBytes("".PadRight(16, '\0'));
+                bw.Write(nameBytes);
+                bw.Write(0);
+            }
+        }
+
+        // Frame infos - 232 bytes
+        foreach (var frame in fin.FrameInfos)
+        {
+            var sprFilenameBytes = Encoding.ASCII.GetBytes(frame.Filename.PadRight(8, '\0'));
+            bw.Write(sprFilenameBytes);
+            bw.Write((short)frame.FrameNumber);
+            bw.Write((short)frame.Unknown1);
+            bw.Write((short)frame.Unknown2);
+            bw.Write((short)frame.Unknown3);
+            bw.Write((short)frame.Unknown4);
+            bw.Write((short)frame.Unknown5);
+            bw.Write((short)frame.Unknown6);
+        }
     }
 
     public class Fin
