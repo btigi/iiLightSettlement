@@ -3,16 +3,16 @@
 
 iiLightSettlement is a C# library supporting the modification of files relating to Dark Colony, the 1997 RTS game developed by Alternative Reality.
 
-| Name   | Read | Write |
-|--------|:----:|-------|
+| Name   | Read | Write | Comment
+|--------|:----:|-------|--------
 | BTS    | ✔   |   ✔   |
-| FIN    | ✔   |   ✗   |
+| FIN    | ✔   |   ✔   |
 | JUS    | ✔   |   ✗   |
 | MAP    | ✗   |   ✗   |
 | MTG    | ✗   |   ✗   |
 | OVH    | ✗   |   ✗   |
 | PTH    | ✗   |   ✗   |
-| SPR    | ✔   |   ✗   |
+| SPR    | ✔   |   ✔   | Save uncompressed only
 
 
 ## Usage
@@ -20,19 +20,19 @@ iiLightSettlement is a C# library supporting the modification of files relating 
 Instantiate the relevant class and call the `Process` method passing the filename.
 
 ```csharp
-var btsReader = new BtsReader();
-var tiles = btsReader.Process(@"D:\data\darkcolony\DC\SCENARIO\ATLANTIS.BTS");
+var btsProcessor = new BtsProcessor();
+var tiles = btsProcessor.Process(@"D:\data\darkcolony\DC\SCENARIO\ATLANTIS.BTS");
 for (int i = 0; i < tiles.Count; i++)
 {
     var bitmap = tiles[i];
     bitmap.Save(@$"D:\data\dc-out\output_{i}.png");
 }
 
-var finReader = new FinReader();
-var leftFin = finReader.Process(@"D:\data\darkcolony\DC\ANIMATE\LEFT.fin");
+var finProcessor = new FinProcessor();
+var leftFin = finProcessor.Process(@"D:\data\darkcolony\DC\ANIMATE\LEFT.fin");
 
-var sprReader = new SprReader();
-var bitmaps = sprReader.Process(@"D:\data\darkcolony\DC\SPRITES\vent2.spr");
+var sprProcessor = new SprProcessor();
+var bitmaps = sprProcessor.Process(@"D:\data\darkcolony\DC\SPRITES\vent2.spr");
 for (int i = 0; i < bitmaps.Count; i++)
 {
     var bitmap = bitmaps[i];
