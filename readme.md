@@ -5,9 +5,10 @@ iiLightSettlement is a C# library supporting the modification of files relating 
 
 | Name   | Read | Write | Comment
 |--------|:----:|-------|--------
+| B00    | ✔   |   ✔   | SPR
 | BTS    | ✔   |   ✔   |
 | FIN    | ✔   |   ✔   |
-| JUS    | ✔   |   ✗   |
+| JUS    | ✔   |   ✔   | SPR
 | MAP    | ✗   |   ✗   |
 | MTG    | ✗   |   ✗   |
 | OVH    | ✗   |   ✗   |
