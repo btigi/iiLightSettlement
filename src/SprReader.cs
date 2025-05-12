@@ -2,12 +2,12 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-public class SprReader
+public class SprProcessor
 {
     /// <summary>
     /// Reads .spr, .b00 and .jus files and returns a list of images.
     /// </summary>
-    public List<Image<Rgba32>> Process(string fileName)
+    public List<Image<Rgba32>> Read(string fileName)
     {
         // 0x000 Header  
         // 0x008 Palette  
@@ -137,5 +137,117 @@ public class SprReader
         }
 
         return image;
+    }
+
+    public void Write(string fileName, List<Image<Rgba32>> images, bool compressed)
+    {
+        if (compressed)
+            throw new NotImplementedException("Saving compressed files is not currently supported");
+
+        const int FrameMetadataOffset = 776;
+        const int FrameMetadataSize = 8;
+
+        using var bw = new BinaryWriter(File.Open(fileName, FileMode.Create));
+
+        bw.Write((short)(compressed ? 1 << 7 : 0)); // Compression flag
+        bw.Write((short)images.Count); // Frame count
+        bw.Write(0); // Unknown
+
+        var palette = GeneratePalette(images);
+        foreach (var color in palette)
+        {
+            bw.Write((byte)((color.R - 3) / 4));
+            bw.Write((byte)((color.G - 3) / 4));
+            bw.Write((byte)((color.B - 3) / 4));
+        }
+
+        var frameDataOffset = FrameMetadataOffset + (images.Count * FrameMetadataSize);
+        var runningOffset = 0;
+
+        for (int frameIndex = 0; frameIndex < images.Count; frameIndex++)
+        {
+            var image = images[frameIndex];
+
+            bw.Seek(FrameMetadataOffset + (frameIndex * FrameMetadataSize), SeekOrigin.Begin);
+            bw.Write((short)image.Width);
+            bw.Write((short)image.Height);
+            bw.Write((short)0); // DisX
+            bw.Write((short)0); // DisY
+
+            bw.Seek(frameDataOffset + runningOffset, SeekOrigin.Begin);
+            var imageData = ConvertFromBitmap(image, compressed, palette);
+            if (compressed)
+            {
+                bw.Write(imageData.Length);
+                bw.Write(imageData);
+                runningOffset += imageData.Length + 4; // Include length prefix
+            }
+            else
+            {
+                bw.Write(imageData);
+                runningOffset += imageData.Length;
+            }
+        }
+    }
+
+    private List<RGBA> GeneratePalette(List<Image<Rgba32>> images)
+    {
+        var palette = new List<RGBA>();
+        var uniqueColors = new HashSet<RGBA>();
+
+        foreach (var image in images)
+        {
+            for (int y = 0; y < image.Height; y++)
+            {
+                for (int x = 0; x < image.Width; x++)
+                {
+                    var pixel = image[x, y];
+                    var color = new RGBA { R = pixel.R, G = pixel.G, B = pixel.B, A = pixel.A };
+                    if (uniqueColors.Add(color) && palette.Count < 256)
+                    {
+                        palette.Add(color);
+                    }
+                }
+            }
+        }
+
+        while (palette.Count < 256)
+        {
+            palette.Add(new RGBA { R = 0, G = 0, B = 0, A = 255 });
+        }
+
+        return palette;
+    }
+
+    private byte[] ConvertFromBitmap(Image<Rgba32> image, bool compressed, List<RGBA> palette)
+    {
+        var imageData = new List<byte>();
+
+        if (compressed)
+        {
+            for (int y = 0; y < image.Height; y++)
+            {
+                for (int x = 0; x < image.Width; x++)
+                {
+                    var pixel = image[x, y];
+                    var paletteIndex = palette.FindIndex(p => p.R == pixel.R && p.G == pixel.G && p.B == pixel.B && p.A == pixel.A);
+                    imageData.Add((byte)paletteIndex);
+                }
+            }
+        }
+        else
+        {
+            for (int y = 0; y < image.Height; y++)
+            {
+                for (int x = 0; x < image.Width; x++)
+                {
+                    var pixel = image[x, y];
+                    var paletteIndex = palette.FindIndex(p => p.R == pixel.R && p.G == pixel.G && p.B == pixel.B && p.A == pixel.A);
+                    imageData.Add((byte)paletteIndex);
+                }
+            }
+        }
+
+        return imageData.ToArray();
     }
 }
