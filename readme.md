@@ -9,12 +9,13 @@ iiLightSettlement is a C# library supporting the modification of files relating 
 | BTS    | ✔   |   ✔   |
 | FIN    | ✔   |   ✔   |
 | JUS    | ✔   |   ✔   | SPR
-| MAP    | ✗   |   ✗   |
+| MAP    | ✔   |   ✗   |
 | MTG    | ✗   |   ✗   |
 | OVH    | ✗   |   ✗   |
 | PTH    | ✗   |   ✗   |
 | SPR    | ✔   |   ✔   | Save uncompressed only
 
+Note: Either the BTS or MAP reading is currently incorrect.
 
 ## Usage
 
