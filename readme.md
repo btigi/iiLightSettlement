@@ -15,8 +15,6 @@ iiLightSettlement is a C# library supporting the modification of files relating 
 | PTH    | ✗   |   ✗   |
 | SPR    | ✔   |   ✔   | Save uncompressed only
 
-Note: Either the BTS or MAP reading is currently incorrect.
-
 ## Usage
 
 Instantiate the relevant class and call the `Process` method passing the filename.
