@@ -4,6 +4,9 @@ using SixLabors.ImageSharp;
 
 public class BtsProcessor
 {
+    private Dictionary<int, int> _fidToFrameIndex = new Dictionary<int, int>();
+    private List<Image<Rgba32>> _frames = new List<Image<Rgba32>>();
+
     public List<RGBA> GetPalette(string fileName)
     {
         using var br = new BinaryReader(File.OpenRead(fileName));
@@ -53,41 +56,55 @@ public class BtsProcessor
         }
 
         var result = new List<Image<Rgba32>>();
+        _fidToFrameIndex.Clear();
+        _frames.Clear();
+        
         for (var i = 0; i < frameCount; i++)
         {
             var start = FrameDataOffset + (FrameLength * i);
-            var bytes = new List<byte>();
-
-            _  = br.ReadInt32(); // usu. 300+
-
-            var byteIndex = start + 4;
-            while (byteIndex < (start + FrameLength))
-            {
-                var dataByte = br.ReadByte();
-                var rgb = palette[dataByte];
-
-                bytes.Add(rgb.R);
-                bytes.Add(rgb.G);
-                bytes.Add(rgb.B);
-                bytes.Add(255);
-                byteIndex++;
-            }
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
+            
+            // Read the Frame ID (FID) from the 4-byte header
+            var fid = br.ReadInt32();
+            _fidToFrameIndex[fid] = i; // Map FID to frame array index
 
             var image = new Image<Rgba32>(FrameWidth, FrameHeight);
-            for (var y = 0; y < FrameWidth; y++)
+            for (var y = 0; y < FrameHeight; y++)
             {
                 for (var x = 0; x < FrameWidth; x++)
                 {
-                    var index = (y * FrameHeight + x) * 4;
-                    var color = new Rgba32(bytes[index], bytes[index + 1], bytes[index + 2], bytes[index + 3]);
-                    image[x, y] = color;
+                    var dataByte = br.ReadByte();
+                    if (dataByte >= palette.Count)
+                    {
+                        dataByte = 0;
+                    }
+                    var rgb = palette[dataByte];
+
+                    // Check for transparency (magenta: RGB 255, 3, 255)
+                    byte alpha = 255;
+                    if (rgb.R == 255 && rgb.G == 3 && rgb.B == 255)
+                    {
+                        alpha = 0; // Make transparent
+                    }
+
+                    image[x, y] = new Rgba32(rgb.R, rgb.G, rgb.B, alpha);
                 }
             }
 
             result.Add(image);
+            _frames.Add(image);
         }
 
         return result;
+    }
+
+    public Image<Rgba32>? GetFrameByFID(int fid)
+    {
+        if (_fidToFrameIndex.TryGetValue(fid, out int frameIndex))
+        {
+            return _frames[frameIndex];
+        }
+        return null;
     }
 
     public void Write(string fileName, List<(Image<Rgba32> image, int infoByte)> images, List<RGBA> palette)
@@ -115,7 +132,7 @@ public class BtsProcessor
             bw.Write((byte)((color.B - 3) / 4));
         }
 
-        // Write frames
+        // Write frames with 4-byte headers
         foreach (var image in images)
         {
             if (image.image.Width != FrameWidth || image.image.Height != FrameHeight)
@@ -123,7 +140,7 @@ public class BtsProcessor
                 throw new ArgumentException($"All images must be {FrameWidth}x{FrameHeight}.");
             }
 
-            bw.Write(image.infoByte);
+            bw.Write(image.infoByte); // 4-byte header per frame (FID)
 
             for (var y = 0; y < FrameHeight; y++)
             {

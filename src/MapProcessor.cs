@@ -136,7 +136,7 @@ public class MapProcessor
         return new RGBA { R = (byte)r, G = (byte)g, B = (byte)b, A = (byte)alpha };
     }
 
-    public List<RGBA> RenderMap(Map map, List<Image<Rgba32>> btsFrames, out int width, out int height)
+    public List<RGBA> RenderMap(Map map, BtsProcessor btsProcessor, out int width, out int height)
     {
         width = (int)(map.Width * 32);
         height = (int)(map.Height * 32);
@@ -157,16 +157,24 @@ public class MapProcessor
             var tile = map.Tiles[t];
             var flags = map.Flags[t];
 
-            // Draw main tile
-            if (tile.MainTile > 0 && tile.MainTile < btsFrames.Count)
+            // Draw main tile using FID lookup
+            if (tile.MainTile > 0)
             {
-                DrawTileToPixels(pixels, btsFrames[tile.MainTile], curX, curY, width, height, flags.FlipMainTile == 1);
+                var mainTileImage = btsProcessor.GetFrameByFID(tile.MainTile);
+                if (mainTileImage != null)
+                {
+                    DrawTileToPixels(pixels, mainTileImage, curX, curY, width, height, flags.FlipMainTile == 1);
+                }
             }
 
-            // Draw overlay tile
-            if (tile.OverlayTile > 0 && tile.OverlayTile < btsFrames.Count)
+            // Draw overlay tile using FID lookup
+            if (tile.OverlayTile > 0)
             {
-                DrawTileToPixels(pixels, btsFrames[tile.OverlayTile], curX, curY, width, height, flags.FlipOverlayTile == 1);
+                var overlayTileImage = btsProcessor.GetFrameByFID(tile.OverlayTile);
+                if (overlayTileImage != null)
+                {
+                    DrawTileToPixels(pixels, overlayTileImage, curX, curY, width, height, flags.FlipOverlayTile == 1);
+                }
             }
 
             curX++;
